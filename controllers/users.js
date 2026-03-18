@@ -1,11 +1,14 @@
 let userModel = require('../schemas/users')
-let bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
+const privateKey = fs.readFileSync(path.join(__dirname, '../privateKey.pem'));
+const publicKey = fs.readFileSync(path.join(__dirname, '../publicKey.pem'));
 module.exports = {
     CreateAnUser: async function (username, password, email, role,
         fullName, avatarUrl, status, loginCount) {
         let newItem = new userModel({
             username: username,
-            password: password,
+            password: password, // Lưu plain text (không mã hóa)
             email: email,
             fullName: fullName,
             avatarUrl: avatarUrl,
@@ -30,7 +33,7 @@ module.exports = {
     ChangePassword: async function (userId, oldpassword, newpassword) {
         let user = await userModel.findOne({ _id: userId, isDeleted: false });
         if (!user) throw new Error("User not found");
-        if (!bcrypt.compareSync(oldpassword, user.password)) {
+        if (oldpassword !== user.password) {
             throw new Error("Mật khẩu cũ không đúng");
         }
         user.password = newpassword;
