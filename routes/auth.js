@@ -4,6 +4,17 @@ let userController = require('../controllers/users')
 let bcrypt = require('bcrypt');
 const { CheckLogin } = require('../utils/authHandler');
 let jwt = require('jsonwebtoken')
+const { ChangePasswordValidator, validatedResult } = require('../utils/validator');
+// Đổi mật khẩu
+router.post('/changepassword', CheckLogin, ChangePasswordValidator, validatedResult, async function (req, res) {
+    try {
+        let { oldpassword, newpassword } = req.body;
+        let result = await userController.ChangePassword(req.user._id, oldpassword, newpassword);
+        res.send(result);
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
+});
 router.post('/register', async function (req, res, next) {
     try {
         let { username, password, email } = req.body;
